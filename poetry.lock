@@ -156,14 +156,14 @@ files = [
 
 [[package]]
 name = "mxm-config"
-version = "0.6.1"
+version = "0.6.2"
 description = "MXM configuration loader and context resolver"
 optional = false
 python-versions = "<3.15,>=3.13"
 groups = ["main"]
 files = [
-    {file = "mxm_config-0.6.1-py3-none-any.whl", hash = "sha256:add44b3aa1e1eda8b683f5719048eed02325cefc54c32b3cdec098f0a98ad71a"},
-    {file = "mxm_config-0.6.1.tar.gz", hash = "sha256:99e5cd7261b0b2019bcfe96074f7a7261d04158f256c552ce3294b34cd558458"},
+    {file = "mxm_config-0.6.2-py3-none-any.whl", hash = "sha256:2a307eb1f0534c2c2a5343441015258b4601c57ecb0de76385e5a285ac4a1cf6"},
+    {file = "mxm_config-0.6.2.tar.gz", hash = "sha256:8d87119208d3c3b0e334a562b24a746e1be57f26362cd15d76ec36b9e1cd6e0a"},
 ]
 
 [package.dependencies]
@@ -804,4 +804,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.15"
-content-hash = "0d6b34fbe3ddc4bab2b32575d7d128249e2e0c046a3ad2fa1c30bb25acaed5e1"
+content-hash = "51387705d73a87e2252ba87b34c7bc57a004944b6ba9580d76398278fb762db3"

@@ -9,20 +9,43 @@ DEFAULT_DOCKERENV_PATH = Path("/.dockerenv")
 
 
 def discover_machine() -> str:
-    """Discover the current MXM machine identifier.
+    """Discover the current MXM machine selector.
 
-    The machine identifier is the canonical MXM name of the physical host.
+    The machine selector identifies the machine-specific configuration profile
+    that should be applied by MXM.
 
-    For v0.1, MXM assumes that managed hosts use stable hostnames which
-    correspond directly to the machine identifier.
+    It is derived from operating-system host information but is not required to
+    equal the raw hostname reported by the operating system. The purpose of the
+    selector is configuration selection rather than unique host identification.
+
+    For v0.1, the selector is derived from the local hostname by taking the
+    unqualified hostname component.
 
     Examples
     --------
-    bridge
-    wildling
-    monolith
+    Raw hostname:
+
+        bridge.local
+
+    Produces:
+
+        bridge
+
+    Raw hostname:
+
+        monolith
+
+    Produces:
+
+        monolith
+
+    Returns
+    -------
+    str
+        MXM machine selector used for machine-specific configuration loading.
     """
-    return socket.gethostname()
+    hostname = socket.gethostname()
+    return hostname.split(".", maxsplit=1)[0]
 
 
 def discover_substrate(
