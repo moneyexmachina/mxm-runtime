@@ -11,12 +11,7 @@ from __future__ import annotations
 from mxm.runtime.discovery import discover_machine, discover_substrate
 from mxm.runtime.validation import validate_runtime_identity_shape
 from mxm.types import (
-    AppId,
-    Environment,
-    MachineId,
     RuntimeIdentity,
-    RuntimeRole,
-    RuntimeSubstrate,
 )
 
 
@@ -48,17 +43,15 @@ def build_runtime_identity(
     RuntimeIdentity
         A validated runtime identity using the shared mxm-types vocabulary.
     """
-    resolved_machine = MachineId(machine) if machine is not None else discover_machine()
-    resolved_substrate = (
-        RuntimeSubstrate(substrate) if substrate is not None else discover_substrate()
-    )
+    resolved_machine = machine if machine is not None else discover_machine()
+    resolved_substrate = substrate if substrate is not None else discover_substrate()
 
     identity = RuntimeIdentity(
-        app=AppId(app),
-        environment=Environment(environment),
+        app=app,
+        environment=environment,
         machine=resolved_machine,
         substrate=resolved_substrate,
-        role=RuntimeRole(role),
+        role=role,
     )
 
     validate_runtime_identity_shape(identity)

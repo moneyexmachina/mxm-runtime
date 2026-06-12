@@ -9,12 +9,7 @@ from mxm.runtime.attestation import (
     attest_runtime_identity,
 )
 from mxm.types import (
-    AppId,
-    Environment,
-    MachineId,
     RuntimeIdentity,
-    RuntimeRole,
-    RuntimeSubstrate,
 )
 
 
@@ -27,28 +22,28 @@ def _identity(
     role: str = "research",
 ) -> RuntimeIdentity:
     return RuntimeIdentity(
-        app=AppId(app),
-        environment=Environment(environment),
-        machine=MachineId(machine),
-        substrate=RuntimeSubstrate(substrate),
-        role=RuntimeRole(role),
+        app=app,
+        environment=environment,
+        machine=machine,
+        substrate=substrate,
+        role=role,
     )
 
 
-def _bridge_machine() -> MachineId:
-    return MachineId("bridge")
+def _bridge_machine() -> str:
+    return "bridge"
 
 
-def _wildling_machine() -> MachineId:
-    return MachineId("wildling")
+def _wildling_machine() -> str:
+    return "wildling"
 
 
-def _local_process() -> RuntimeSubstrate:
-    return RuntimeSubstrate("local-process")
+def _local_process() -> str:
+    return "local-process"
 
 
-def _docker_container() -> RuntimeSubstrate:
-    return RuntimeSubstrate("docker-container")
+def _docker_container() -> str:
+    return "docker-container"
 
 
 def test_attest_runtime_identity_accepts_matching_local_facts(

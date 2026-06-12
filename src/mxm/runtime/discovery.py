@@ -5,12 +5,10 @@ from __future__ import annotations
 import socket
 from pathlib import Path
 
-from mxm.types import MachineId, RuntimeSubstrate
-
 DEFAULT_DOCKERENV_PATH = Path("/.dockerenv")
 
 
-def discover_machine() -> MachineId:
+def discover_machine() -> str:
     """Discover the current MXM machine identifier.
 
     The machine identifier is the canonical MXM name of the physical host.
@@ -24,13 +22,13 @@ def discover_machine() -> MachineId:
     wildling
     monolith
     """
-    return MachineId(socket.gethostname())
+    return socket.gethostname()
 
 
 def discover_substrate(
     *,
     dockerenv_path: Path = DEFAULT_DOCKERENV_PATH,
-) -> RuntimeSubstrate:
+) -> str:
     """Discover the current execution substrate.
 
     Discovery order:
@@ -42,6 +40,6 @@ def discover_substrate(
     conventional probe rather than an MXM-owned runtime concept.
     """
     if dockerenv_path.exists():
-        return RuntimeSubstrate("docker-container")
+        return "docker-container"
 
-    return RuntimeSubstrate("local-process")
+    return "local-process"

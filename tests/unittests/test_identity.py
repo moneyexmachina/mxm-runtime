@@ -7,21 +7,16 @@ import pytest
 from mxm.runtime.identity import build_runtime_identity
 from mxm.runtime.validation import RuntimeIdentityError
 from mxm.types import (
-    AppId,
-    Environment,
-    MachineId,
     RuntimeIdentity,
-    RuntimeRole,
-    RuntimeSubstrate,
 )
 
 
-def _discovered_machine() -> MachineId:
-    return MachineId("bridge")
+def _discovered_machine() -> str:
+    return "bridge"
 
 
-def _discovered_substrate() -> RuntimeSubstrate:
-    return RuntimeSubstrate("local-process")
+def _discovered_substrate() -> str:
+    return "local-process"
 
 
 def test_build_runtime_identity_with_explicit_values() -> None:
@@ -34,11 +29,11 @@ def test_build_runtime_identity_with_explicit_values() -> None:
     )
 
     assert identity == RuntimeIdentity(
-        app=AppId("mxm-moneymachine"),
-        environment=Environment("dev"),
-        machine=MachineId("bridge"),
-        substrate=RuntimeSubstrate("local-process"),
-        role=RuntimeRole("research"),
+        app="mxm-moneymachine",
+        environment="dev",
+        machine="bridge",
+        substrate="local-process",
+        role="research",
     )
 
 
@@ -57,7 +52,7 @@ def test_build_runtime_identity_discovers_missing_machine(
         role="research",
     )
 
-    assert identity.machine == MachineId("bridge")
+    assert identity.machine == "bridge"
 
 
 def test_build_runtime_identity_discovers_missing_substrate(
@@ -75,7 +70,7 @@ def test_build_runtime_identity_discovers_missing_substrate(
         role="research",
     )
 
-    assert identity.substrate == RuntimeSubstrate("local-process")
+    assert identity.substrate == "local-process"
 
 
 def test_build_runtime_identity_discovers_missing_machine_and_substrate(
@@ -97,11 +92,11 @@ def test_build_runtime_identity_discovers_missing_machine_and_substrate(
     )
 
     assert identity == RuntimeIdentity(
-        app=AppId("mxm-moneymachine"),
-        environment=Environment("dev"),
-        machine=MachineId("bridge"),
-        substrate=RuntimeSubstrate("local-process"),
-        role=RuntimeRole("research"),
+        app="mxm-moneymachine",
+        environment="dev",
+        machine="bridge",
+        substrate="local-process",
+        role="research",
     )
 
 

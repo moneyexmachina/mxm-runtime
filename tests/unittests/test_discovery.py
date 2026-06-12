@@ -7,7 +7,6 @@ from pathlib import Path
 import pytest
 
 from mxm.runtime.discovery import discover_machine, discover_substrate
-from mxm.types import MachineId, RuntimeSubstrate
 
 
 def _wildling_hostname() -> str:
@@ -22,7 +21,7 @@ def test_discover_machine_uses_system_hostname(
         _wildling_hostname,
     )
 
-    assert discover_machine() == MachineId("wildling")
+    assert discover_machine() == "wildling"
 
 
 def test_discover_substrate_detects_docker_container(
@@ -31,9 +30,12 @@ def test_discover_substrate_detects_docker_container(
     dockerenv_path = tmp_path / ".dockerenv"
     dockerenv_path.touch()
 
-    assert discover_substrate(
-        dockerenv_path=dockerenv_path,
-    ) == RuntimeSubstrate("docker-container")
+    assert (
+        discover_substrate(
+            dockerenv_path=dockerenv_path,
+        )
+        == "docker-container"
+    )
 
 
 def test_discover_substrate_defaults_to_local_process(
@@ -41,6 +43,9 @@ def test_discover_substrate_defaults_to_local_process(
 ) -> None:
     dockerenv_path = tmp_path / ".dockerenv"
 
-    assert discover_substrate(
-        dockerenv_path=dockerenv_path,
-    ) == RuntimeSubstrate("local-process")
+    assert (
+        discover_substrate(
+            dockerenv_path=dockerenv_path,
+        )
+        == "local-process"
+    )
