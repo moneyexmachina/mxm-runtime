@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mxm-runtime"
-version = "0.1.0"
+version = "0.1.1"
 description = "Runtime identity discovery and runtime context construction for Money Ex Machina."
 keywords = [
     "runtime",
@@ -32,8 +32,8 @@ python = ">=3.13,<3.15"
 mxm-types = "^0.3.1"
 mxm-config = ">=0.6.2, <0.7"
 mxm-secrets = ">=0.3.2, <0.4"
-typer = "^0.20.0"
-rich = "^14.2.0"
+rich = ">=14.2,<16.0"
+typer = ">=0.20,<1.0"
 
 [tool.poetry.scripts]
 

@@ -26,7 +26,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - _Nothing yet._
+## [0.1.1] - 2026-06-12
 
+### Changed
+
+- Relaxed shared CLI dependency constraints to improve compatibility across
+  the MXM package ecosystem.
+- Updated `rich` dependency range to allow newer compatible releases.
+- Updated `typer` dependency range to allow newer compatible releases.
+- Aligned `mxm-runtime` dependency policy with the versions already adopted by
+  other MXM infrastructure packages such as `mxm-refdata`.
+
+### Notes
+
+This release contains no functional runtime changes.
+
+The purpose of the release is to remove unnecessary dependency conflicts when
+integrating `mxm-runtime` into downstream applications such as
+`mxm-moneymachine` and to establish a more permissive compatibility policy for
+shared CLI dependencies.
 ## [0.1.0] - 2026-06-12
 
 ### Added
@@ -203,4 +221,5 @@ while preserving the RuntimeContext construction model.
 
 ## Versions
 
+[0.1.1]: https://github.com/moneyexmachina/mxm-runtime/releases/tag/v0.1.1
 [0.1.0]: https://github.com/moneyexmachina/mxm-runtime/releases/tag/v0.1.0
