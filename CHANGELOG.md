@@ -26,6 +26,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - _Nothing yet._
+## [0.1.2] - 2026-06-15
+
+### Added
+
+- Added database configuration materialisation to `RuntimeContext`.
+- Added `db_configs` field containing resolved `mxm_databases`
+  configuration views.
+- Added runtime path materialisation from resolved `mxm_paths`
+  configuration.
+- Added `export_root` support to `RuntimePaths`.
+- Added comprehensive test coverage for:
+  - database configuration materialisation
+  - runtime path materialisation
+  - machine/environment path resolution
+  - runtime configuration validation
+
+### Changed
+
+- Updated `RuntimeContext` to expose:
+  - secrets services
+  - database configuration views
+  - materialised runtime paths
+- Updated runtime construction flow to materialise runtime resources in
+  addition to configured services.
+- Updated README documentation to reflect expanded RuntimeContext
+  capabilities and runtime materialisation responsibilities.
+
+### Architecture
+
+`mxm-runtime` now materialises both runtime services and runtime resources.
+
+Runtime construction follows:
+
+```text
+RuntimeIdentity
+    ↓
+mxm-config
+    ↓
+Configuration Resolution
+    ↓
+Resource Materialisation
+    ↓
+RuntimeContext
+```
+
+Current RuntimeContext capabilities:
+
+```text
+identity
+configuration
+secrets
+database configuration views
+runtime paths
+runtime metadata
+```
+
+Database backends remain the responsibility of downstream applications.
+
+`mxm-runtime` exposes resolved database configuration but does not create
+database connections or backend services.
+
+### Compatibility
+
+No breaking changes.
+
+Existing consumers of `RuntimeContext` continue to function unchanged,
+while new consumers may access database configuration views and
+materialised runtime paths.
+
+### Status
+
+Runtime Identity Discovery Complete
+
+Configuration Integration Complete
+
+Secrets Integration Complete
+
+Runtime Path Materialisation Complete
+
+Database View Materialisation Complete
+
+Store Integration In Progress
+
 ## [0.1.1] - 2026-06-12
 
 ### Changed
@@ -221,5 +304,6 @@ while preserving the RuntimeContext construction model.
 
 ## Versions
 
+[0.1.2]: https://github.com/moneyexmachina/mxm-runtime/releases/tag/v0.1.2
 [0.1.1]: https://github.com/moneyexmachina/mxm-runtime/releases/tag/v0.1.1
 [0.1.0]: https://github.com/moneyexmachina/mxm-runtime/releases/tag/v0.1.0

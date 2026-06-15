@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mxm-runtime"
-version = "0.1.1"
+version = "0.1.2"
 description = "Runtime identity discovery and runtime context construction for Money Ex Machina."
 keywords = [
     "runtime",

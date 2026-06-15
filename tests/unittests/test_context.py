@@ -19,28 +19,18 @@ from mxm.secrets.registries import (
 from mxm.types import RuntimeIdentity
 
 
-def test_runtime_paths_defaults_to_none() -> None:
-    """RuntimePaths should default all optional roots to None."""
-    paths = RuntimePaths()
-
-    assert paths.data_root is None
-    assert paths.artifact_root is None
-    assert paths.state_root is None
-    assert paths.log_root is None
-
-
 def test_runtime_paths_retains_explicit_paths() -> None:
     """RuntimePaths should retain explicitly supplied path values."""
     paths = RuntimePaths(
         data_root=Path("/var/lib/mxm/data"),
         artifact_root=Path("/var/lib/mxm/artifacts"),
-        state_root=Path("/var/lib/mxm/state"),
+        export_root=Path("/var/lib/mxm/exports"),
         log_root=Path("/var/log/mxm"),
     )
 
     assert paths.data_root == Path("/var/lib/mxm/data")
     assert paths.artifact_root == Path("/var/lib/mxm/artifacts")
-    assert paths.state_root == Path("/var/lib/mxm/state")
+    assert paths.export_root == Path("/var/lib/mxm/exports")
     assert paths.log_root == Path("/var/log/mxm")
 
 
@@ -82,6 +72,7 @@ def test_runtime_context_supports_minimal_construction() -> None:
     assert context.identity == identity
     assert context.config is config
     assert context.secrets is None
+    assert context.db_configs is None
     assert context.paths is None
     assert context.runtime is None
 
@@ -102,6 +93,28 @@ def test_runtime_context_supports_full_construction() -> None:
                 "refs": {},
                 "policies": {},
             },
+            "mxm_databases": {
+                "operational_state": {
+                    "driver": "postgresql",
+                    "host": "localhost",
+                    "port": 5432,
+                    "name": "mxm_dev",
+                    "user": "mxm_dev_app",
+                    "password_ref": "mxm_dev_db_password",
+                },
+            },
+        }
+    )
+    db_configs = make_subconfig(
+        {
+            "operational_state": {
+                "driver": "postgresql",
+                "host": "localhost",
+                "port": 5432,
+                "name": "mxm_dev",
+                "user": "mxm_dev_app",
+                "password_ref": "mxm_dev_db_password",
+            },
         }
     )
     secrets = SecretsApi(
@@ -112,7 +125,7 @@ def test_runtime_context_supports_full_construction() -> None:
     paths = RuntimePaths(
         data_root=Path("/var/lib/mxm/data"),
         artifact_root=Path("/var/lib/mxm/artifacts"),
-        state_root=Path("/var/lib/mxm/state"),
+        export_root=Path("/var/lib/mxm/exports"),
         log_root=Path("/var/log/mxm"),
     )
     runtime = RuntimeMetadata(
@@ -124,6 +137,7 @@ def test_runtime_context_supports_full_construction() -> None:
         identity=identity,
         config=config,
         secrets=secrets,
+        db_configs=db_configs,
         paths=paths,
         runtime=runtime,
     )
@@ -131,5 +145,6 @@ def test_runtime_context_supports_full_construction() -> None:
     assert context.identity == identity
     assert context.config is config
     assert context.secrets is secrets
+    assert context.db_configs is db_configs
     assert context.paths == paths
     assert context.runtime == runtime

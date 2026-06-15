@@ -12,10 +12,10 @@ from mxm.types import RuntimeIdentity
 class RuntimePaths:
     """Resolved filesystem locations available to this runtime."""
 
-    data_root: Path | None = None
-    artifact_root: Path | None = None
-    state_root: Path | None = None
-    log_root: Path | None = None
+    data_root: Path
+    artifact_root: Path
+    export_root: Path
+    log_root: Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,5 +33,6 @@ class RuntimeContext:
     identity: RuntimeIdentity
     config: MXMConfig
     secrets: SecretsApi | None = None
+    db_configs: MXMConfig | None = None
     paths: RuntimePaths | None = None
     runtime: RuntimeMetadata | None = None

@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/python-3.13+-blue)
 [![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
 
-Runtime discovery, configuration-driven service construction, and RuntimeContext assembly for the Money Ex Machina ecosystem.
+Runtime discovery, configuration-driven runtime resource materialization, and RuntimeContext assembly for the Money Ex Machina ecosystem.
 
 `mxm-runtime` is responsible for constructing the operational environment in which MXM applications execute.
 
@@ -72,7 +72,7 @@ mxm-config
     ↓
 Configuration Resolution
     ↓
-Service Construction
+Resource Materialisation
     ↓
 RuntimeContext
     ↓
@@ -156,34 +156,35 @@ RuntimeContext(
     identity=...,
     config=...,
     secrets=...,
+    db_configs=...,
+    paths=...,
+    runtime=...,
 )
 ```
+Current RuntimeContext materialises:
 
-Future versions may additionally materialise:
+identity
+configuration
+secrets
+database configuration views
+runtime paths
+runtime metadata
 
-```text
-paths
-databases
-reference data services
-storage services
-execution services
-reporting services
-```
-
-Applications are expected to consume runtime services through RuntimeContext.
+Applications are expected to consume runtime resources (and SecretsApi) through RuntimeContext.
 
 ## Runtime Construction Flow
 
 Runtime construction follows the sequence:
 
 ```text
-RuntimeIdentity
-    ↓
-load_config(...)
-    ↓
+
 Configuration Views
     ↓
-Service Construction
+SecretsApi Construction
+    ↓
+Path Materialisation
+    ↓
+Database View Extraction
     ↓
 RuntimeContext
 ```
@@ -195,12 +196,13 @@ context = build_runtime_context(
     identity=identity,
 )
 ```
-
 which currently materialises:
-
 ```text
 configuration
 secret services
+database configuration views
+runtime paths
+runtime metadata
 ```
 
 and returns a configured RuntimeContext.
@@ -232,6 +234,16 @@ configuration views
 ```
 
 `mxm-runtime` consumes configuration and constructs runtime services from it.
+
+mxm-runtime also extracts and materialises selected configuration views
+required for runtime operation.
+
+Examples:
+```text
+mxm_secrets
+mxm_databases
+mxm_paths
+```
 
 Example:
 
@@ -293,6 +305,15 @@ api_key = context.secrets.get_secret(
 )
 ```
 
+```python
+db_config = context.db_configs.operational_state
+
+print(db_config.host)
+print(db_config.name)
+
+data_root = context.paths.data_root
+```
+
 ## Design Principles
 
 - **Explicit runtime identity**
@@ -333,8 +354,11 @@ Current release status:
 
 ```text
 Runtime Identity Discovery Complete
-RuntimeContext Construction Complete
-Service Expansion In Progress
+Configuration Integration Complete
+Secrets Integration Complete
+Runtime Path Materialisation Complete
+Database View Materialisation Complete
+Store Integration In Progress
 ```
 
 Current RuntimeContext materialises:
@@ -342,6 +366,9 @@ Current RuntimeContext materialises:
 ```text
 configuration
 secrets
+database configuration views
+runtime paths
+runtime metadata
 ```
 
 Additional services will be added incrementally.
