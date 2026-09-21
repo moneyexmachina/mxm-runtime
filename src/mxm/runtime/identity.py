@@ -28,13 +28,16 @@ def build_runtime_identity(
     Parameters
     ----------
     app:
-        MXM application or package identifier.
+        MXM application identifier used to select application configuration.
     environment:
         Operational environment, for example ``dev``, ``test``, or ``prod``.
     role:
-        Runtime responsibility, for example ``research`` or ``marketdata``.
+        Runtime responsibility and configuration selector, for example
+        ``research`` or ``marketdata``. This is not an authentication or
+        authorization role.
     machine:
-        Physical or logical host identifier. If omitted, this is discovered.
+        Machine-specific runtime configuration selector. If omitted, this is
+        discovered from the local host.
     substrate:
         Execution substrate. If omitted, this is discovered.
 
