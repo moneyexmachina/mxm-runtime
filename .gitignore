@@ -41,4 +41,10 @@ node_modules/
 site/
 docs/_build/
 
+.factory/
+
 # end: mxm-foundry:end
+
+# Factory-generated local state
+.factory/
+droid-wiki/
