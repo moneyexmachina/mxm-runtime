@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- _Nothing yet._
+- Added `resolve_runtime_context(...)` as the runtime context resolution entry
+  point.
 
 ### Changed
 
-- _Nothing yet._
+- `RuntimeContext` now contains exactly the mandatory `identity`, `config`, and
+  `paths` fields.
+- Runtime resolution continues to select configuration by identity and resolve
+  `RuntimePaths`, while leaving capability-specific namespaces available under
+  `context.config`.
 
 ### Deprecated
 
@@ -21,7 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Removed
 
-- _Nothing yet._
+- Removed the breaking `build_runtime_context(...)` API in favor of
+  `resolve_runtime_context(...)`.
+- Removed `secrets`, `db_configs`, and `runtime` from `RuntimeContext`, and
+  removed the public `RuntimeMetadata` model.
+- Removed secrets and database capability interpretation from runtime
+  resolution.
+- Removed the direct `mxm-secrets` dependency.
 
 ### Fixed
 

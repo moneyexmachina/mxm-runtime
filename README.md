@@ -5,105 +5,61 @@
 ![Python](https://img.shields.io/badge/python-3.13+-blue)
 [![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
 
-Runtime discovery, configuration-driven runtime resource materialization, and RuntimeContext assembly for the Money Ex Machina ecosystem.
+Runtime identity discovery and context resolution for the Money Ex Machina
+ecosystem.
 
-`mxm-runtime` is responsible for constructing the operational environment in which MXM applications execute.
+`mxm-runtime` discovers runtime characteristics and resolves the shared context
+that applications use during composition. It does not construct
+capability-specific services.
 
-It discovers runtime characteristics, loads and resolves configuration, constructs configured services, and assembles them into a single RuntimeContext.
+## RuntimeContext
 
-## Purpose
-
-MXM applications require more than configuration files.
-
-They require an operational environment:
-
-```text
-Who am I?
-Where am I running?
-Which configuration applies?
-Which services are available?
-Where should data and artefacts live?
-```
-
-`mxm-runtime` answers these questions.
-
-It exists to separate:
-
-```text
-application code
-```
-
-from:
-
-```text
-runtime discovery
-configuration loading
-service construction
-deployment concerns
-context assembly
-```
-
-Applications should not:
-
-- discover machine characteristics,
-- determine deployment substrate,
-- load configuration directly,
-- construct service APIs,
-- or reason about deployment topology.
-
-Instead, applications receive a configured RuntimeContext:
+`RuntimeContext` is the complete integration protocol between runtime
+resolution and application composition. It contains exactly three mandatory
+values:
 
 ```python
-context = build_runtime_context(
-    identity=runtime_identity,
+RuntimeContext(
+    identity=...,
+    config=...,
+    paths=...,
 )
 ```
 
-and consume the services and resources provided by that context.
+- `identity` is the resolved `RuntimeIdentity`.
+- `config` is the complete identity-selected `MXMConfig`.
+- `paths` contains the resolved data, artifact, export, and log roots.
 
-## Architecture
+A successfully resolved context is complete, but does not claim that downstream
+capabilities are authenticated, connected, or ready.
 
-`mxm-runtime` acts as the runtime constructor layer of the MXM architecture.
+## Resolution flow
 
 ```text
 RuntimeIdentity
     ↓
 mxm-config
     ↓
-Configuration Resolution
+Identity-selected configuration
     ↓
-Resource Materialisation
+RuntimePaths resolution
     ↓
 RuntimeContext
     ↓
-Application
+Application composition
 ```
 
-The package owns runtime construction.
+Runtime identity selects application, environment, and machine configuration
+layers. The `mxm_paths` namespace is runtime-owned and is resolved into
+`RuntimePaths`.
 
-It does not own configuration semantics or secret resolution semantics.
+Other namespaces, including `mxm_secrets` and `mxm_databases`, remain available
+unchanged through `context.config`. Their owning packages validate and
+interpret them when the application composes those capabilities.
 
-Those responsibilities belong to:
+## Runtime identity and discovery
 
-```text
-mxm-config
-```
-
-and:
-
-```text
-mxm-secrets
-```
-
-respectively.
-
-## Core Concepts
-
-### RuntimeIdentity
-
-Represents the operational identity of a running process.
-
-Example:
+`RuntimeIdentity` represents the operational identity of a process:
 
 ```text
 app          mxm-moneymachine
@@ -113,170 +69,72 @@ substrate    local-process
 role         marketdata
 ```
 
-Runtime identity determines which configuration layers are selected and which services are constructed.
-
-### Machine
-
-A machine identifies a machine-specific configuration profile.
-
-Examples:
-
-```text
-bridge
-monolith
-wildling
-scribe
-```
-
-Machine values are derived from operating-system characteristics and are used to select machine-specific configuration.
-
-They are configuration selectors rather than unique hardware identifiers.
-
-### Substrate
-
-Represents the execution substrate.
-
-Examples:
-
-```text
-local-process
-docker
-```
-
-Substrate allows runtime construction to adapt to deployment environment differences.
-
-### RuntimeContext
-
-Represents the fully constructed operational environment.
-
-Current fields:
+Machine and substrate discovery utilities derive selectors from operating
+system facts:
 
 ```python
-RuntimeContext(
-    identity=...,
-    config=...,
-    secrets=...,
-    db_configs=...,
-    paths=...,
-    runtime=...,
-)
-```
-Current RuntimeContext materialises:
+from mxm.runtime.discovery import discover_machine, discover_substrate
 
-identity
-configuration
-secrets
-database configuration views
-runtime paths
-runtime metadata
-
-Applications are expected to consume runtime resources (and SecretsApi) through RuntimeContext.
-
-## Runtime Construction Flow
-
-Runtime construction follows the sequence:
-
-```text
-
-Configuration Views
-    ↓
-SecretsApi Construction
-    ↓
-Path Materialisation
-    ↓
-Database View Extraction
-    ↓
-RuntimeContext
-```
-
-For example:
-
-```python
-context = build_runtime_context(
-    identity=identity,
-)
-```
-which currently materialises:
-```text
-configuration
-secret services
-database configuration views
-runtime paths
-runtime metadata
-```
-
-and returns a configured RuntimeContext.
-
-## Runtime Discovery
-
-`mxm-runtime` provides discovery utilities for determining runtime characteristics.
-
-Examples:
-
-```python
 machine = discover_machine()
 substrate = discover_substrate()
 ```
 
-These functions derive MXM runtime selectors from operating-system facts.
+Machine values select machine-specific configuration. They are not unique
+hardware identifiers.
 
-The resulting values are suitable for configuration resolution and runtime construction.
-
-## Relationship To mxm-config
-
-`mxm-config` owns:
-
-```text
-configuration storage
-configuration loading
-configuration merging
-configuration views
-```
-
-`mxm-runtime` consumes configuration and constructs runtime services from it.
-
-mxm-runtime also extracts and materialises selected configuration views
-required for runtime operation.
-
-Examples:
-```text
-mxm_secrets
-mxm_databases
-mxm_paths
-```
-
-Example:
-
-```text
-RuntimeIdentity
-    ↓
-mxm-config
-    ↓
-MXMConfig
-    ↓
-RuntimeContext
-```
-
-## Relationship To mxm-secrets
-
-`mxm-secrets` owns:
-
-```text
-secret references
-authorization
-resolution
-retrieval
-```
-
-`mxm-runtime` constructs configured secret services and makes them available through RuntimeContext.
-
-Applications are expected to consume:
+## Usage
 
 ```python
-context.secrets
+from mxm.runtime import resolve_runtime_context
+
+context = resolve_runtime_context(identity=identity)
+
+data_root = context.paths.data_root
+database_config = context.config.mxm_databases.operational_state
+secrets_config = context.config.mxm_secrets
 ```
 
-rather than constructing SecretsApi instances directly.
+Applications pass capability configuration to the package that owns that
+capability. `mxm-runtime` does not construct a `SecretsApi`, database clients,
+or other capability object graphs.
+
+For tests or alternate configuration stores, pass an explicit store root:
+
+```python
+context = resolve_runtime_context(
+    identity=identity,
+    store_root=config_store_path,
+)
+```
+
+Resolution requires valid identity-selected configuration and an `mxm_paths`
+namespace with string values for:
+
+```text
+data_root
+artifact_root
+export_root
+log_root
+```
+
+Missing or capability-invalid `mxm_secrets` and `mxm_databases` namespaces do
+not prevent runtime context resolution.
+
+## Ownership boundaries
+
+`mxm-runtime` owns:
+
+- runtime identity discovery and validation;
+- identity-selected configuration loading;
+- runtime path resolution;
+- `RuntimeContext` assembly.
+
+`mxm-config` owns configuration storage, loading, merging, views, and
+interpolation.
+
+Capability packages own their configuration schemas, validation, and service
+composition. This keeps objects produced by application composition out of the
+context used for application composition.
 
 ## Installation
 
@@ -284,94 +142,20 @@ rather than constructing SecretsApi instances directly.
 pip install mxm-runtime
 ```
 
-## Usage
-
-Construct a RuntimeContext:
-
-```python
-from mxm.runtime import build_runtime_context
-
-context = build_runtime_context(
-    identity=identity,
-)
-```
-
-Access configured services:
-
-```python
-api_key = context.secrets.get_secret(
-    "databento_api_key",
-    identity=context.identity,
-)
-```
-
-```python
-db_config = context.db_configs.operational_state
-
-print(db_config.host)
-print(db_config.name)
-
-data_root = context.paths.data_root
-```
-
-## Design Principles
-
-- **Explicit runtime identity**
-  Runtime identity is always represented explicitly.
-
-- **Configuration-driven construction**
-  Runtime behaviour is determined through configuration rather than hardcoded wiring.
-
-- **Separation of concerns**
-  Discovery, configuration, resolution, construction, and application logic remain separate.
-
-- **Strict typing**
-  Fully Pyright-clean and PEP 561 compliant.
-
-- **Minimal implicit behaviour**
-  Runtime construction is deterministic and inspectable.
-
-- **Composable services**
-  Runtime services are assembled from independent packages.
-
 ## Development
 
 ```bash
 poetry install
-
 make check
 ```
 
-Run the RuntimeContext smoke test:
+Run the local RuntimeContext smoke script:
 
 ```bash
 poetry run python scripts/smoke_runtime_context.py
 ```
 
-## Status
-
-Current release status:
-
-```text
-Runtime Identity Discovery Complete
-Configuration Integration Complete
-Secrets Integration Complete
-Runtime Path Materialisation Complete
-Database View Materialisation Complete
-Store Integration In Progress
-```
-
-Current RuntimeContext materialises:
-
-```text
-configuration
-secrets
-database configuration views
-runtime paths
-runtime metadata
-```
-
-Additional services will be added incrementally.
+The smoke script depends on a local `mxm-config-store`.
 
 ## License
 
