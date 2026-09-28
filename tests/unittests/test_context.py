@@ -1,21 +1,15 @@
-"""Tests for mxm.runtime context model objects."""
+"""Tests for the public RuntimeContext contract."""
 
 from __future__ import annotations
 
+from dataclasses import MISSING, fields
 from pathlib import Path
 
+import mxm.runtime as runtime_package
+import mxm.runtime.build as runtime_build
+import mxm.runtime.context as context_module
 from mxm.config import make_subconfig
-from mxm.runtime.context import (
-    RuntimeContext,
-    RuntimeMetadata,
-    RuntimePaths,
-)
-from mxm.secrets import SecretsApi
-from mxm.secrets.registries import (
-    SecretPolicyRegistry,
-    SecretRefRegistry,
-    SecretStoreRegistry,
-)
+from mxm.runtime.context import RuntimeContext, RuntimePaths
 from mxm.types import RuntimeIdentity
 
 
@@ -34,19 +28,21 @@ def test_runtime_paths_retains_explicit_paths() -> None:
     assert paths.log_root == Path("/var/log/mxm")
 
 
-def test_runtime_metadata_retains_execution_metadata() -> None:
-    """RuntimeMetadata should retain materialised substrate metadata."""
-    metadata = RuntimeMetadata(
-        substrate="local_process",
-        is_container=False,
+def test_runtime_context_has_exactly_three_mandatory_fields() -> None:
+    """RuntimeContext should require only identity, config, and paths."""
+    context_fields = fields(RuntimeContext)
+
+    assert tuple(field.name for field in context_fields) == (
+        "identity",
+        "config",
+        "paths",
     )
+    assert all(field.default is MISSING for field in context_fields)
+    assert all(field.default_factory is MISSING for field in context_fields)
 
-    assert metadata.substrate == "local_process"
-    assert metadata.is_container is False
 
-
-def test_runtime_context_supports_minimal_construction() -> None:
-    """RuntimeContext should support construction with only core fields."""
+def test_runtime_context_retains_complete_resolved_context() -> None:
+    """RuntimeContext should retain all three integration values."""
     identity = RuntimeIdentity(
         app="mxm_moneymachine",
         environment="dev",
@@ -54,97 +50,45 @@ def test_runtime_context_supports_minimal_construction() -> None:
         substrate="local_process",
         role="research",
     )
-    config = make_subconfig(
-        {
-            "mxm_secrets": {
-                "stores": {},
-                "refs": {},
-                "policies": {},
-            },
-        }
-    )
-
-    context = RuntimeContext(
-        identity=identity,
-        config=config,
-    )
-
-    assert context.identity == identity
-    assert context.config is config
-    assert context.secrets is None
-    assert context.db_configs is None
-    assert context.paths is None
-    assert context.runtime is None
-
-
-def test_runtime_context_supports_full_construction() -> None:
-    """RuntimeContext should retain all materialised context components."""
-    identity = RuntimeIdentity(
-        app="mxm_moneymachine",
-        environment="dev",
-        machine="bridge",
-        substrate="local_process",
-        role="research",
-    )
-    config = make_subconfig(
-        {
-            "mxm_secrets": {
-                "stores": {},
-                "refs": {},
-                "policies": {},
-            },
-            "mxm_databases": {
-                "operational_state": {
-                    "driver": "postgresql",
-                    "host": "localhost",
-                    "port": 5432,
-                    "name": "mxm_dev",
-                    "user": "mxm_dev_app",
-                    "password_ref": "mxm_dev_db_password",
-                },
-            },
-        }
-    )
-    db_configs = make_subconfig(
-        {
-            "operational_state": {
-                "driver": "postgresql",
-                "host": "localhost",
-                "port": 5432,
-                "name": "mxm_dev",
-                "user": "mxm_dev_app",
-                "password_ref": "mxm_dev_db_password",
-            },
-        }
-    )
-    secrets = SecretsApi(
-        secret_ref_registry=SecretRefRegistry(()),
-        secret_store_registry=SecretStoreRegistry(()),
-        secret_policy_registry=SecretPolicyRegistry(()),
-    )
+    config = make_subconfig({"application": {"name": "moneymachine"}})
     paths = RuntimePaths(
         data_root=Path("/var/lib/mxm/data"),
         artifact_root=Path("/var/lib/mxm/artifacts"),
         export_root=Path("/var/lib/mxm/exports"),
         log_root=Path("/var/log/mxm"),
     )
-    runtime = RuntimeMetadata(
-        substrate="local_process",
-        is_container=False,
-    )
 
-    context = RuntimeContext(
-        identity=identity,
-        config=config,
-        secrets=secrets,
-        db_configs=db_configs,
-        paths=paths,
-        runtime=runtime,
-    )
+    context = RuntimeContext(identity=identity, config=config, paths=paths)
 
     assert context.identity == identity
     assert context.config is config
-    assert context.secrets is secrets
-    assert context.db_configs is db_configs
     assert context.paths == paths
-    assert context.runtime == runtime
+
+
+def test_removed_context_models_and_fields_are_not_public() -> None:
+    """Removed capability and metadata surfaces should not remain public."""
+    assert not hasattr(context_module, "RuntimeMetadata")
+
+    for removed_field in ("secrets", "db_configs", "runtime"):
+        assert not hasattr(RuntimeContext, removed_field)
+
+
+def test_runtime_package_exports_the_accepted_public_contract() -> None:
+    """The package should export resolution without removed public names."""
+    assert set(runtime_package.__all__) == {
+        "RuntimeContext",
+        "RuntimeIdentity",
+        "RuntimeIdentityError",
+        "RuntimePaths",
+        "build_runtime_identity",
+        "resolve_runtime_context",
+        "validate_runtime_identity_shape",
+    }
+    package_resolver = getattr(runtime_package, "resolve_runtime_context", None)
+    build_resolver = getattr(runtime_build, "resolve_runtime_context", None)
+    assert callable(package_resolver)
+    assert package_resolver is build_resolver
+
+    for removed_name in ("RuntimeMetadata", "build_runtime_context"):
+        assert not hasattr(runtime_package, removed_name)
+        assert not hasattr(runtime_build, removed_name)

@@ -1,17 +1,14 @@
-"""Local smoke script for RuntimeContext materialisation.
+"""Local smoke script for RuntimeContext resolution.
 
-This script exercises the local runtime materialisation chain:
+This script exercises the local runtime resolution chain:
 
 RuntimeIdentity
     ↓
 mxm-config
     ↓
-mxm-secrets
-    ↓
 RuntimeContext
 
-It is intentionally not a test. It depends on local machine state, including the
-local mxm-config-store and gopass installation.
+It is intentionally not a test. It depends on the local mxm-config-store.
 
 Run from the repository root with:
 
@@ -22,27 +19,27 @@ poetry run python scripts/smoke_runtime_context.py
 
 from __future__ import annotations
 
-from mxm.runtime.build import build_runtime_context
+from mxm.runtime.build import resolve_runtime_context
 from mxm.runtime.discovery import discover_machine, discover_substrate
 from mxm.types import RuntimeIdentity
 
 
 def main() -> None:
-    """Build and print a local RuntimeContext smoke summary."""
+    """Resolve and print a local RuntimeContext smoke summary."""
     machine = discover_machine()
     substrate = discover_substrate()
 
     identity = RuntimeIdentity(
-        app="mxm-secrets",
+        app="mxm-runtime",
         environment="dev",
         machine=machine,
         substrate=substrate,
         role="marketdata",
     )
 
-    context = build_runtime_context(identity=identity)
+    context = resolve_runtime_context(identity=identity)
 
-    print("RuntimeContext materialised")
+    print("RuntimeContext resolved")
     print()
     print("Identity")
     print(f"  app:         {context.identity.app}")
@@ -52,14 +49,11 @@ def main() -> None:
     print(f"  role:        {context.identity.role}")
     print()
 
-    if context.secrets is None:
-        raise RuntimeError("RuntimeContext.secrets was not materialised")
-
-    print("Secrets")
-    print(f"  stores:      {', '.join(context.secrets.secret_store_registry.names())}")
-    print(f"  refs:        {', '.join(context.secrets.secret_ref_registry.names())}")
-    print(f"  policies:    {', '.join(context.secrets.secret_policy_registry.names())}")
-    print(f"  gopass ready: {context.secrets.check_ready()}")
+    print("Paths")
+    print(f"  data:        {context.paths.data_root}")
+    print(f"  artifacts:   {context.paths.artifact_root}")
+    print(f"  exports:     {context.paths.export_root}")
+    print(f"  logs:        {context.paths.log_root}")
 
 
 if __name__ == "__main__":

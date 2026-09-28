@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from mxm.config import MXMConfig
-from mxm.secrets import SecretsApi
 from mxm.types import RuntimeIdentity
 
 
@@ -19,20 +18,9 @@ class RuntimePaths:
 
 
 @dataclass(frozen=True, slots=True)
-class RuntimeMetadata:
-    """Materialised metadata about the current execution substrate."""
-
-    substrate: str
-    is_container: bool
-
-
-@dataclass(frozen=True, slots=True)
 class RuntimeContext:
-    """Materialised operational context for an MXM runtime."""
+    """Resolved context for MXM application composition."""
 
     identity: RuntimeIdentity
     config: MXMConfig
-    secrets: SecretsApi | None = None
-    db_configs: MXMConfig | None = None
-    paths: RuntimePaths | None = None
-    runtime: RuntimeMetadata | None = None
+    paths: RuntimePaths
